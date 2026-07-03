@@ -17,6 +17,8 @@ dependencies = [
     "magic-pdf>=1.3.12",
     "mineru-open-sdk>=0.2.5",
     "minio>=7.2.20",
+    "modelscope>=1.37.1",
+    "neo4j>=6.2.0",
     "pandas==2.2.3",
     "pymilvus-model>=0.3.2",
     "pymongo>=4.17.0",
