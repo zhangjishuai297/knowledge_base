@@ -25,5 +25,5 @@ minio_config = MinIOConfig(
     secret_key=os.getenv("MINIO_SECRET_KEY"),
     bucket_name=os.getenv("MINIO_BUCKET_NAME"),
     minio_img_dir=os.getenv("MINIO_IMG_DIR"),
-    minio_secure=os.getenv("MINIO_SECURE") == "True"
+    minio_secure=os.getenv("MINIO_SECURE") == False
 )

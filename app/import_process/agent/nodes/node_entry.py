@@ -57,7 +57,7 @@ def node_entry(state: ImportGraphState) -> ImportGraphState:
     return state
 
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
 
     # 单元测试：覆盖不支持类型、MD、PDF三种场景
     logger.info("===== 开始node_entry节点单元测试 =====")
@@ -74,8 +74,8 @@ def node_entry(state: ImportGraphState) -> ImportGraphState:
         task_id="test_task_002",
         local_file_path="小米用户手册.md"
     )
-    node_entry(test_state2)
-
+    results = node_entry(test_state2)
+    logger.info(f"测试2结果: {format_state(results)}")
     # 测试3: PDF文件
     test_state3 = create_default_state(
         task_id="test_task_003",

@@ -92,6 +92,10 @@ if __name__ == "__main__":
         # 测试4：开启JSON输出模式
         client4 = get_llm_client(model="qwen3-32b", json_mode=True)
         logger.info("✅ 测试4通过：JSON输出模式客户端创建成功")
+        
+        # 测试调用model
+        results = client1.invoke("请用一句话描述人工智能的未来发展趋势。")
+        logger.info(f"[LLM客户端] 测试调用成功，返回结果：{results}")
 
     except Exception as e:
         logger.error(f"❌ LLM客户端工具测试失败：{str(e)}", exc_info=True)

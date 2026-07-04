@@ -54,7 +54,7 @@ def node_pdf_to_md(state: ImportGraphState) -> ImportGraphState:
         # 更新工作流状态
         state["md_path"] = str(md_path_obj.absolute())
         state["is_md_read_enabled"] = True
-        state["md_content"] = md_path_obj.read_bytes()
+        state["md_content"] = md_path_obj.read_text()
     except Exception as e:
         logger.error(f"【{func_name}】PDF转MD流程执行失败，错误信息：{e}")
         raise
