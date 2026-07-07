@@ -95,7 +95,7 @@ if __name__ == "__main__":
         
         # 测试调用model
         results = client1.invoke("请用一句话描述人工智能的未来发展趋势。")
-        logger.info(f"[LLM客户端] 测试调用成功，返回结果：{results}")
+        
 
     except Exception as e:
         logger.error(f"❌ LLM客户端工具测试失败：{str(e)}", exc_info=True)

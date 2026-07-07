@@ -1,6 +1,8 @@
 from pathlib import Path
 from app.utils.path_util import PROJECT_ROOT
 from app.core.logger import logger  # 可选，加日志更友好
+from langchain.prompts import PromptTemplate
+
 
 def load_prompt(name: str, **kwargs) -> str:
     """
@@ -18,6 +20,7 @@ def load_prompt(name: str, **kwargs) -> str:
 
     # 3. 读取纯文本提示词（你的原有逻辑）
     raw_prompt = prompt_path.read_text(encoding='utf-8')
+    
 
     # 4. 核心：如果传了参数，渲染占位符；没传参，直接返回原文本
     if kwargs:
