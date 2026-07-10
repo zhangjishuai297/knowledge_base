@@ -5,6 +5,7 @@ import base64
 from pathlib import Path
 from typing import Dict, List, Tuple
 from collections import deque
+import time
 
 # MinIO相关依赖
 from minio import Minio
@@ -218,6 +219,8 @@ def replace_md_img_url(md_content: str, image_info: Dict[str, Tuple[str, str]]) 
 
 
 def upload_to_minio(minio_client: Minio, upload_dir: str, targets:List[Tuple[str, str, Tuple[str, str]]]):
+    if not targets:
+        return {}
     bucket_name = minio_config.bucket_name
     # 清理目录图片
     # 遍历目录下所有文件,minio中前缀最开始不能有/
@@ -259,7 +262,8 @@ def upload_to_minio(minio_client: Minio, upload_dir: str, targets:List[Tuple[str
             # 图片名称 -> 图片URL
             urls[image_name] = image_url
         except Exception as e:
-            logger.error(f"上传图片失败：{e}")        
+            logger.error(f"上传图片失败：{e}")
+        time.sleep(0.02)        
     return urls
 
 def step_5_backup_new_md_file(md_content: str, md_path_obj: Path):
@@ -310,8 +314,9 @@ def node_md_img(state: ImportGraphState) -> ImportGraphState:
     doc_path = md_path_obj.parent
     doc_stem = doc_path.stem
     summaries = step3_generate_image_summaries(target_images,doc_stem)
-    new_md_content = step4_upload_and_replace(get_minio_client(),doc_stem,summaries,md_content,target_images)
-    new_md_path = step_5_backup_new_md_file(md_content,md_path_obj)
+    minio_client = get_minio_client()
+    new_md_content = step4_upload_and_replace(minio_client,doc_stem,summaries,md_content,target_images)
+    new_md_path = step_5_backup_new_md_file(new_md_content,md_path_obj)
     
     # 更新状态
     state["md_content"] = new_md_content

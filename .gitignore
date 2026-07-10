@@ -12,3 +12,4 @@ logs
 test
 output
 .env
+.idea

@@ -306,7 +306,7 @@ if __name__ == "__main__":
     from app.utils.path_util import PROJECT_ROOT
     logger.info(f"测试获取根地址：{PROJECT_ROOT}")
 
-    test_pdf_name = os.path.join("doc", "华为平板 C3 用户指南-(BZD-AL00&AL10&W00,EMUI10.1_01,ZH-CN).pdf")
+    test_pdf_name = os.path.join("doc", "万用表RS-12的使用.pdf")
     test_pdf_path = os.path.join(PROJECT_ROOT, test_pdf_name)
 
     # 构造测试状态
