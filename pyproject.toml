@@ -20,6 +20,7 @@ dependencies = [
     "modelscope>=1.37.1",
     "neo4j>=6.2.0",
     "pandas==2.2.3",
+    "pymilvus>=3.0.0",
     "pymilvus-model>=0.3.2",
     "pymongo>=4.17.0",
     "python-dotenv>=1.2.2",

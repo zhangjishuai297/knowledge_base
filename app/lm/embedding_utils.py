@@ -29,7 +29,8 @@ def get_bge_m3_ef():
             "model_name": model_name,
             "device": device,
             "use_fp16": use_fp16,
-            "normalize_embeddings": True
+            "normalize_embeddings": True,
+            "use_safetensors": True
         }
     )
 
@@ -106,3 +107,22 @@ def generate_embeddings(texts):
 6. 分级日志覆盖：从模型初始化、向量生成到异常报错，全流程日志记录，便于生产环境问题排查；
 7. 入参合法性校验：防止空列表/非列表入参导致的内部报错，提升工具类健壮性。
 """
+
+
+if __name__ == "__main__":
+    # 测试向量生成
+    texts = [
+        "这是一个测试文本",
+        "这是第二个测试文本",
+        "这是第三个测试文本",
+        "这是第四个测试文本",
+        "这是第五个测试文本",
+        "这是第六个测试文本",
+        "这是第七个测试文本",
+        "这是第八个测试文本",
+        "这是第九个测试文本",
+        "这是第十个测试文本"
+    ]
+    
+    vector_result = generate_embeddings(texts)
+    print(vector_result.get('sparse'))

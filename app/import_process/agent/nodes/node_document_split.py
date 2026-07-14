@@ -11,9 +11,9 @@ from app.utils.task_utils import add_running_task,add_done_task
 
 # --- 配置参数 (Configuration) ---
 # 单个Chunk最大字符长度：超过则触发二次切分（适配大模型上下文窗口）
-DEFAULT_MAX_CONTENT_LENGTH = 300 # 512 - 1500 token
+DEFAULT_MAX_CONTENT_LENGTH = 1000 # 512 - 1500 token
 # 短Chunk合并阈值：同父标题的短Chunk会被合并，减少碎片化
-MIN_CONTENT_LENGTH = 400 # 最小的长度
+MIN_CONTENT_LENGTH = 500 # 最小的长度
 
 
 def node_document_split(state: ImportGraphState) -> ImportGraphState:
@@ -57,7 +57,7 @@ def node_document_split(state: ImportGraphState) -> ImportGraphState:
 def step6_backup_result(sections: list, state: ImportGraphState):
     md_path = state["md_path"]
     json_file_path = Path(md_path).with_suffix(".json")
-    Path(json_file_path).write_text(json.dumps(sections, ensure_ascii=False, indent=4))
+    json_file_path.write_text(json.dumps(sections, ensure_ascii=False, indent=4))
 def step4_refine_chunks(sections: list, max_length: int = DEFAULT_MAX_CONTENT_LENGTH, min_length: int = MIN_CONTENT_LENGTH):
      # 判断最大长度是否小于等于0,判断是否有有效的值
     final_sections = []
@@ -73,7 +73,7 @@ def step4_refine_chunks(sections: list, max_length: int = DEFAULT_MAX_CONTENT_LE
     final_sections = merge_short_chunks(final_sections, min_length)
     # 补全缺失字段,有的元素,没有part 和parrent_title字段
     for section in final_sections:
-        section["part"] = section.get("part") or "1"
+        section["part"] = section.get("part") or 1
         section["parent_title"] = section.get("parent_title") or section.get("title") or "无标题"
     return final_sections
     
@@ -248,6 +248,7 @@ def step1_check_value(state: ImportGraphState):
         md_path = state.get('md_path')
         md_content = Path(md_path).read_text(encoding='utf-8')
         # raise ValueError("md_content为空")
+        raise ValueError("md_content为空")
         
     # 统一换行
     md_content.replace("\r\n","\n").replace("\r","\n")
@@ -270,6 +271,7 @@ if __name__ == '__main__':
     # 测试MD文件路径（需手动将测试文件放入对应目录）
     test_md_name = os.path.join(r"output/万用表RS-12的使用", "万用表RS-12的使用.md")
     test_md_path = os.path.join(PROJECT_ROOT, test_md_name)
+    
 
     # 校验测试文件是否存在
     if not os.path.exists(test_md_path):
@@ -286,11 +288,11 @@ if __name__ == '__main__':
         }
         logger.info("开始本地测试 - MD图片处理全流程")
         # 执行核心处理流程
-        # result_state = node_md_img(test_state)
-        # logger.info(f"本地测试完成 - 处理结果状态：{result_state}")
+        result_state = node_md_img(test_state)
+        logger.info(f"本地测试完成 - 处理结果状态：{result_state}")
         logger.info("\n=== 开始执行文档切分节点集成测试 ===")
 
         logger.info(">> 开始运行当前节点：node_document_split（文档切分）")
-        final_state = node_document_split(test_state)
+        final_state = node_document_split(result_state)
         final_chunks = final_state.get("chunks", [])
         logger.info(f"✅ 测试成功：最终生成{len(final_chunks)}个有效Chunk")

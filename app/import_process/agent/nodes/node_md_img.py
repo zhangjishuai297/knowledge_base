@@ -270,7 +270,7 @@ def step_5_backup_new_md_file(md_content: str, md_path_obj: Path):
     new_md_path = md_path_obj.with_stem(md_path_obj.stem + "_new")
     new_md_path.write_text(md_content,encoding="utf-8")
     logger.info(f"5.[备份新MD文件]:成功，已备份为：{new_md_path.name}") 
-    return str(new_md_path.absolute)
+    return str(new_md_path.absolute())
 
 def node_md_img(state: ImportGraphState) -> ImportGraphState:
     """
@@ -330,5 +330,6 @@ def node_md_img(state: ImportGraphState) -> ImportGraphState:
     return state
 
 if __name__ == "__main__":
-    state = create_default_state(md_path="/Users/zhangjishuai/code/knowledge_base/output/华为平板 C3 用户指南-(BZD-AL00&AL10&W00,EMUI10.1_01,ZH-CN)/华为平板 C3 用户指南-(BZD-AL00&AL10&W00,EMUI10.1_01,ZH-CN).md")
+    #output/万用表RS-12的使用/万用表RS-12的使用.md
+    state = create_default_state(md_path="/Users/zhangjishuai/code/knowledge_base/output/万用表RS-12的使用/万用表RS-12的使用.md")
     node_md_img(state)
