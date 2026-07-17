@@ -8,6 +8,7 @@ import shutil
 import uuid
 from typing import List, Dict, Any
 from datetime import datetime
+import aiofiles
 from numpy import add
 import uvicorn
 
@@ -108,7 +109,11 @@ async def upload_file(background_tasks: BackgroundTasks, files: List[UploadFile]
         # 创建文件对象
         local_file_path = local_dir / file.filename
         # 把文件内容写入文件对象
-        local_file_path.write_bytes(await file.read())
+        # local_file_path.write_bytes(await file.read())
+        # 流式分片写入 Path
+        async with aiofiles.open(local_file_path, "wb") as out_file:
+            while chunk := await file.read(1024 * 1024):
+                await out_file.write(chunk)
         
         
         add_done_task(task_id, "upload_file")

@@ -95,11 +95,13 @@ def node_import_milvus(state: ImportGraphState) -> ImportGraphState:
             logger.info("集合创建成功")
             
         # 插入之前删除:根据item_name删除
+        file_title = state.get("file_title")
         if item_name:
             client.load_collection(collection_name)
             del_res = client.delete(
             collection_name=collection_name,
-            filter=f"item_name == '{item_name}'"
+            filter="file_title == $ft && item_name == $in",
+            filter_params={"ft": file_title, "in": item_name}
             )
             logger.info(f"删除数据数量:{del_res.get('delete_count')}")
         # 插入数据,参数:集合名data=[],这里1条也用list封装
