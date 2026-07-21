@@ -160,19 +160,19 @@ def step3_vector_match(item_names):
         
         # 这里加入参数output_filed会有bug,版本问题,先查主键,通过主键查询
         # 2. 提取所有主键
-        pk_ids = []
-        for hits in hybrid_result:
-            for hit in hits:
-                pk_ids.append(hit["id"])
+        # pk_ids = []
+        # for hits in hybrid_result:
+        #     for hit in hits:
+        #         pk_ids.append(hit["id"])
 
         # 3. 通过query一次性取出需要的标量字段
-        if pk_ids:
-            expr = f"pk in {pk_ids}"
-            scalar_data = milvus_client.query(
-                collection_name=milvus_config.item_name_collection,
-                filter=expr,
-                output_fields=["item_name"]
-            )
+        # if pk_ids:
+        #     expr = f"pk in {pk_ids}"
+        #     scalar_data = milvus_client.query(
+        #         collection_name=milvus_config.item_name_collection,
+        #         filter=expr,
+        #         output_fields=["item_name"]
+        #     )
     # 自己写逻辑把 向量检索分数 和 scalar_data 根据pk合并
         
         matches = [] # 存放一组的检索结果
@@ -226,4 +226,4 @@ def step2_use_llm(query, history_chat):
 
 
 if __name__ == "__main__":
-    node_item_name_confirm({"original_query": "华为擎云W585多少钱","session_id":"user_dong","is_stream":False})
+    node_item_name_confirm({"original_query": "华为擎云还有哪些产品","session_id":"user_dong","is_stream":False})
