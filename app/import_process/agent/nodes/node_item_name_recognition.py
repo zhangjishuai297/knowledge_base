@@ -10,6 +10,7 @@ import sys
 from typing import List, Dict, Any, Tuple
 
 from humanfriendly import length_size_units
+from app.conf.lm_config import lm_config
 from app.conf.milvus_config import milvus_config
 # 导入Milvus客户端（向量数据库核心操作）、数据类型枚举（定义集合Schema）
 from fastapi import params
@@ -206,7 +207,7 @@ def step4_fill_data(chucks: List[Dict[str, Any]],item_name: str):
 def step3_call_llm(file_title: str,context: str) ->str:
     # 获取大模型客户端
     model = get_llm_client()
-    logger.info("获取大模型客户端成功")
+    logger.info(f"获取大模型客户端成功,当前模型{lm_config.llm_model}")
     # 获取提示词
     prompt = load_prompt("item_name_recognition",file_title=file_title,context=context)
     system_prompt = load_prompt("product_recognition_system")

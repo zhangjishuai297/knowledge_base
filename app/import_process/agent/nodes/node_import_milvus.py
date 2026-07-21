@@ -100,8 +100,7 @@ def node_import_milvus(state: ImportGraphState) -> ImportGraphState:
             client.load_collection(collection_name)
             del_res = client.delete(
             collection_name=collection_name,
-            filter="file_title == $ft && item_name == $in",
-            filter_params={"ft": file_title, "in": item_name}
+            filter=f"file_title == \"{file_title}\" && item_name == \"{item_name}\"",
             )
             logger.info(f"删除数据数量:{del_res.get('delete_count')}")
         # 插入数据,参数:集合名data=[],这里1条也用list封装

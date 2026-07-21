@@ -132,7 +132,7 @@ def step3_generate_image_summaries(target_images,root_folder,max_requests: int =
     # 获取视觉大模型
     try:  
         vision_llm = get_llm_client(lm_config.vl_model)
-        logger.info("视觉大模型初始化成功")
+        logger.info(f"视觉大模型初始化成功,当前视觉模型:{lm_config.vl_model}")
         # 使用限流器工具限制对模型的访问次数
         request_times = deque()
         logger.info(f"开始对图片进行摘要处理")

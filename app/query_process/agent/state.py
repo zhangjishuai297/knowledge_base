@@ -3,8 +3,7 @@ from typing import Annotated, List
 import operator
 
 
-def overwrite(old, new):
-    return new
+
 class QueryGraphState(TypedDict):
     """
     QueryGraphState 定义了整个查询流程中流转的数据结构。
@@ -29,5 +28,5 @@ class QueryGraphState(TypedDict):
     # 辅助信息
     item_names: List[str]  # 提取出的商品名称
     rewritten_query: str  # 改写后的问题
-    hstristory: list  # 历史对话记录
+    history: list  # 历史对话记录
     is_stream: bool  # 是否流式输出标记
