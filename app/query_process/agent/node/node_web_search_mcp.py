@@ -101,6 +101,6 @@ async def mcp_call(query):
         await search_mcp.cleanup()
 
 if __name__ == "__main__":
-    res = node_web_search_mcp({"original_query": "如何使用百度搜索","session_id":"user_dong","is_stream":False})
+    res = node_web_search_mcp({"original_query": "华为擎云怎么关机","session_id":"user_dong","is_stream":False})
     print(res)
 
