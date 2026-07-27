@@ -83,7 +83,7 @@ def step3_dynamic_topk(reranked_docs):
             # 计算差值
             gap = abs(s1_score - s2_score)
             # 计算差值比
-            gap_ratio = gap / abs(s1_score) +  +1e-6
+            gap_ratio = gap / (abs(s1_score) +  +1e-6)
             
             # 做判断
             if gap >= RERANK_GAP_ABS or gap_ratio >= RERANK_GAP_RATIO:
@@ -121,8 +121,8 @@ def step2_sort_docs(merged_docs, rewritten_query):
     """
     # 构建sentence_pairs
     sentence_pairs = [(rewritten_query, doc.get("text")) for doc in merged_docs]
-    
-    score_res= reranker_model.compute_score(sentence_pairs = sentence_pairs)
+    # normalize=True 结果为归一化后的分数,结果为正数,越接近1,越相似
+    score_res= reranker_model.compute_score(sentence_pairs = sentence_pairs,normalize=True)
 
     # 构建新列表
     new_doc_list = []
