@@ -130,8 +130,12 @@ def step2_sort_docs(merged_docs, rewritten_query):
     # 进行批处理
     bacth_size = 3
     score_list = []
-    for i in range(0, len(sentence_pairs), bacth_size):
-        score_list.extend(reranker_model.compute_score(sentence_pairs = sentence_pairs[i:i+bacth_size],normalize=True))
+    if len(sentence_pairs) > bacth_size:
+        logger.info(f"进行批处理, bacth_size={bacth_size}")
+        for i in range(0, len(sentence_pairs), bacth_size):
+            score_list.extend(reranker_model.compute_score(sentence_pairs = sentence_pairs[i:i+bacth_size],normalize=True))
+    else:
+        score_list = reranker_model.compute_score(sentence_pairs = sentence_pairs,normalize=True)
     
 
     # 构建新列表
