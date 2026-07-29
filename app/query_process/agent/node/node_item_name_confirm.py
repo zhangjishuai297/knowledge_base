@@ -9,7 +9,7 @@ from scipy.fftpack import sc_diff
 from app.clients.milvus_utils import create_hybrid_search_requests, get_milvus_client, hybrid_search
 from app.conf.milvus_config import milvus_config
 from app.core.logger import logger
-from app.clients.mongo_history_utils import get_recent_messages, save_chat_message
+from app.clients.mongo_history_utils import get_recent_messages, sanitize_mongo_data, save_chat_message
 from app.core.load_prompt import load_prompt
 from app.import_process.agent.state import ImportGraphState
 from app.lm.embedding_utils import generate_embeddings
@@ -53,7 +53,8 @@ def node_item_name_confirm(state):
     comfirm_res = step4_comfirm_item_name(extract_list)
     # 5. 根据整合的结果,决定走向
     new_state = step5_check_item_name_direction(state,comfirm_res)
-    # new_state["history"] = json.dump(history_chat,ensure_ascii=False)
+    history_chat = sanitize_mongo_data(history_chat)
+    new_state["history"] = history_chat
     new_state['rewritten_query'] = rewritten_query
     
     

@@ -1,9 +1,11 @@
-
+import re
+from turtle import pu
+from app.clients.mongo_history_utils import save_chat_message
 from app.core.logger import logger
 from app.core.load_prompt import load_prompt
 from app.lm.lm_utils import get_llm_client
 from app.utils.task_utils import add_done_task, add_running_task, set_task_result
-from app.utils.sse_utils import create_sse_queue, get_sse_queue, push_to_session, remove_sse_queue
+from app.utils.sse_utils import SSEEvent, create_sse_queue, get_sse_queue, push_to_session, remove_sse_queue
 from app.query_process.agent.state import QueryGraphState
 import sys
 
@@ -37,32 +39,76 @@ def node_answer_output(state: QueryGraphState) -> QueryGraphState:
     add_running_task(session_id, sys._getframe().f_code.co_name,is_stream)
     #  1检查答案：** 判断state 中的answer是否已经存在，如果存在直接输出answer中的答案，注意判断是否需要流式输出需要则流式输出
     # 在node_item_name_confirm 节点中已经处理了答案,直接回答
-    
+    final_answer = ""
     answer = state.get("answer","")
     if answer:
+        final_answer = answer
         logger.info(f"答案已经存在,直接返回答案:{answer}")
         handle_answer(answer,is_stream,session_id)
-        return state
+    else:
+        # 如果没有answer,进行下一步处理
+        # 2生成提示词：**根据state中的问题、重新问题、历史对话、提问商品（item_names）、 重排内容 组织prompt 并调用llm 
+        logger.info(f"生成提示词")
+        fianl_prompt = generate_prompt(state)
     
-    # 如果没有answer,进行下一步处理
-    # 2生成提示词：**根据state中的问题、重新问题、历史对话、提问商品（item_names）、 重排内容 组织prompt 并调用llm 
-    logger.info(f"生成提示词")
-    fianl_prompt = generate_prompt(state)
+        # 生成答案处理处理答案：** ，注意判断是否需要流式输出需要则流式输出
+        logger.info(f"使用模型生成答案")
+        final_answer = generate_answer(fianl_prompt,is_stream,session_id)
+        state['answer'] = final_answer
     
-    # 生成答案处理处理答案：** ，注意判断是否需要流式输出需要则流式输出
-    logger.info(f"使用模型生成答案")
-    final_answer = generate_answer(fianl_prompt,is_stream,session_id)
-    state['answer'] = final_answer
     
+    
+    # 5流操作的final push:  做最后一次push操作**（主要是为了触发前端图片渲染) 
+    image_urls = push_images(state)
+    if not image_urls:
+        logger.info(f"没有图片需要展示")
+    logger.info(f"图片URL列表：{image_urls}")
+    if is_stream:
+        push_to_session(session_id,SSEEvent.FINAL,{"answer":final_answer,"image_urls":image_urls,"status":"completed"})
+        
     #  **4）** **保存答案：**把答案写入到mongodb的history中 利用clients/mongo_history_utils.py中的save_chat_message方法
+    save_chat_message(session_id=session_id,
+                      role = "assistant", 
+                      text= final_answer,
+                      rewritten_query="",
+                      item_names= state["item_names"],
+                      image_urls=image_urls)
 
 
-    
     # 记录任务结束
     set_task_result(state["session_id"], "answer", state['answer'])
     add_done_task(state["session_id"], sys._getframe().f_code.co_name,state["is_stream"])
+    # 关闭连接信号
+    push_to_session(state["session_id"], "__close__", {})
     return {"answer": final_answer}
-
+def push_images(state: QueryGraphState):
+    """
+    从最后的结果中获取图片,并推送给前端
+    reranked_docs= state.get("reranked_docs",[])
+    判断source类型,如果是local,从文本中通过正则匹配获取图片
+                 如果是web,直接url获取,判断是否是图片 
+    """
+    reranked_docs= state.get("reranked_docs",[])
+    images = []
+    for doc in reranked_docs:
+        source = doc.get("source","")
+        if source == "local":
+            # 本地图片
+            text = doc.get("text","")
+            # 通过正则匹配获取图片
+            # ![xxx](http://43.134.237.214:9000/knowledge-base-files/upload-images/%E5%8D%8E%E4%B8%BA%E6%93%8E%E4%BA%91B730%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97-(PUCZ,Windows11_03,zh-cn)/a9776f3c3ca64860708034764e9979493791c676173a836d26a7a166ac0690c3.jpg)xxx
+            pat = re.compile(r'!\[.*?\]\((.*?\.(?:png|jpg|jpeg|gif|bmp|webp|svg))\)')
+            for url in re.findall(pat,text):
+                images.append(url)
+        elif source == "web":
+            # 网页图片
+            url = doc.get("url","")
+            # 判断是否是图片
+            if url.endswith((".png", ".jpg", ".jpeg", ".gif",".webp",".bmp",".svg")):
+                # 添加图片
+                images.append(url)
+    # 返回图片
+    return images
 def generate_answer(fianl_prompt,is_stream,session_id):
     llm_client = get_llm_client()
     messages = [
@@ -140,13 +186,14 @@ def generate_prompt(state: QueryGraphState):
             if context_len + len(history_str) > MAX_CONTEXT_CHARS:
                 break
             context_len += len(history_str)
+        logger.info(f"history_str: {history_str}")
     else:
         history_str = "无历史记录"
         
     # 3.处理item_names
     item_names_str = ",".join(item_names)
-    # 处理item_names
-    item_names = ",".join(item_names)
+    logger.info(f"item_names_str: {item_names_str}")
+  
     # 处理question,如需处理
     # 把内容添加到模版文件
     final_prompt = load_prompt("answer_out",context=context,history=history_str,item_names=item_names_str,question=question)

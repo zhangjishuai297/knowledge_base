@@ -448,8 +448,12 @@
     }
 
     function normalizeUrl(rawUrl) {
-      const s = String(rawUrl || '').trim();
+      let s = String(rawUrl || '').trim();
       if (!s) return '';
+      // 补上缺失的协议头，否则浏览器会当成相对路径处理
+      if (!/^https?:\/\//i.test(s)) {
+        s = 'http://' + s;
+      }
       // 尽量保留原始 URL，但把空格编码，避免 img src 失败
       return s.replace(/\s/g, '%20');
     }
@@ -603,13 +607,6 @@
             img.style.display = 'none';
           });
           imgWrap.appendChild(img);
-
-          const link = document.createElement('a');
-          link.href = safeUrl;
-          link.target = '_blank';
-          link.rel = 'noopener noreferrer';
-          link.textContent = url;
-          imgWrap.appendChild(link);
         }
         containerEl.appendChild(imgWrap);
       }
@@ -897,13 +894,17 @@
         es.addEventListener('final', (e) => {
           const typing = botMsgEl.querySelector('.typing');
           if (typing) typing.remove();
-          // 收起进度条
+          // 把进度条改成”已完成”再收起，避免summary还显示”处理中”
           const progress = botMsgEl.querySelector('details.progress');
-          if (progress) progress.removeAttribute('open');
+          if (progress) {
+            const summary = progress.querySelector('summary');
+            if (summary) summary.textContent = summary.textContent.replace('处理中', '已完成');
+            progress.removeAttribute('open');
+          }
 
           try {
             const d = JSON.parse(e.data || '{}');
-            // 流式 delta 可能不包含“【图片】/图片列表”，最终包的 d.answer 才是完整答案；优先使用 d.answer
+            // 流式 delta 可能不包含”【图片】/图片列表”，最终包的 d.answer 才是完整答案；优先使用 d.answer
             const finalText = (d && typeof d.answer === 'string' && d.answer.trim().length > 0) ? d.answer : (rawAnswerText || answerEl.textContent || '');
             renderAnswerWithImages(answerEl, finalText, d.image_urls || []);
           } catch (_) { }
@@ -915,8 +916,13 @@
           // 响应用户的 final_answer 信号，确保图片渲染
           const typing = botMsgEl.querySelector('.typing');
           if (typing) typing.remove();
+          // 把进度条改成”已完成”再收起
           const progress = botMsgEl.querySelector('details.progress');
-          if (progress) progress.removeAttribute('open');
+          if (progress) {
+            const summary = progress.querySelector('summary');
+            if (summary) summary.textContent = summary.textContent.replace('处理中', '已完成');
+            progress.removeAttribute('open');
+          }
 
           try {
             const d = JSON.parse(e.data || '{}');
