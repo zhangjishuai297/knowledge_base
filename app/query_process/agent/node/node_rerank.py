@@ -127,12 +127,17 @@ def step2_sort_docs(merged_docs, rewritten_query):
     # 构建sentence_pairs
     sentence_pairs = [(rewritten_query, doc.get("text")) for doc in merged_docs]
     # normalize=True 结果为归一化后的分数,结果为正数,越接近1,越相似
-    score_res= reranker_model.compute_score(sentence_pairs = sentence_pairs,normalize=True)
+    # 进行批处理
+    bacth_size = 3
+    score_list = []
+    for i in range(0, len(sentence_pairs), bacth_size):
+        score_list.extend(reranker_model.compute_score(sentence_pairs = sentence_pairs[i:i+bacth_size],normalize=True))
+    
 
     # 构建新列表
     new_doc_list = []
     
-    for score, doc  in zip(score_res, merged_docs):
+    for score, doc  in zip(score_list, merged_docs):
         # 拷贝doc,添加score
         new_doc = dict(doc)
         new_doc["score"] = score
