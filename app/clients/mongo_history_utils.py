@@ -157,6 +157,18 @@ def save_chat_message(
         result = mongo_tool.chat_message.insert_one(document)
         # 新增操作返回插入的ObjectId并转为字符串，便于上层使用（避免直接返回ObjectId对象）
         return str(result.inserted_id)
+    
+from bson import ObjectId
+def sanitize_mongo_data(data):
+    """递归把所有 ObjectId 转字符串，解决FastAPI序列化报错"""
+    if isinstance(data, ObjectId):
+        return str(data)
+    elif isinstance(data, dict):
+        return {k: sanitize_mongo_data(v) for k, v in data.items()}
+    elif isinstance(data, (list, tuple)):
+        return [sanitize_mongo_data(item) for item in data]
+    else:
+        return data
 
 
 def update_message_item_names(ids: List[str], item_names: List[str]) -> int:
