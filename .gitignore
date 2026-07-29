@@ -15,3 +15,4 @@ output
 .idea
 mongodb
 .claude
+.pytest_cache
