@@ -24,9 +24,11 @@ def node_rerank(state):
     # 阶段三：动态 TopK
     """
     add_running_task(state["session_id"], sys._getframe().f_code.co_name, state.get("is_stream"))
+    logger.add("Rerank节点开始执行...")
     # 获取相关数据
     rrf_chunks = state.get("rrf_chunks",[])
     web_search_docs = state.get("web_search_docs",[])
+    logger.info(f"开始进行rrf排序, rrf_chunks={len(rrf_chunks)}, web_search_docs={len(web_search_docs)}")
     if not rrf_chunks or not web_search_docs:
         return state
    
@@ -35,11 +37,14 @@ def node_rerank(state):
     # 获取重写问题,或者使用原始问题
     rewritten_query = state.get("rewritten_query",state.get("original_query"))
     if not rewritten_query:
+        logger.error("无重写问题,无法进行rerank")
         return state
     
     # 使用重排序模型进行排序
+    logger.info(f"开始进行rerank排序, rewritten_query={rewritten_query}")
     reranked_docs = step2_sort_docs(merged_docs,rewritten_query)
     # 阶段三：动态 TopK
+    logger.info(f"开始进行动态TopK排序, reranked_docs={len(reranked_docs)}")
     final_docs = step3_dynamic_topk(reranked_docs)
     
     
@@ -91,7 +96,7 @@ def step3_dynamic_topk(reranked_docs):
                 # 断崖阈值（绝对）:2个相邻x的距离大于阈值,截断
                 # 记录截断索引
                 topk = index + 1
-                logger.info(f"断崖截断 @ index={index}, score: {s1_score:.4f} → {s2_score:.4f}")
+                logger.info(f"断崖截断  index={index}, score: {s1_score:.4f} → {s2_score:.4f}")
 
                 break
     logger.info(f"TopK 完成: 保留 {topk if topk < max_topk else max_topk} 条")
@@ -178,7 +183,7 @@ def step1_merge_docs(rrf_chunks, web_search_docs):
         temp_dict["source"] = "web"
         temp_dict["url"] = doc.get("url")
         merge_list.append(temp_dict)
-        
+    logger.info(f"合并完成: 共 {len(merge_list)} 条")
     return merge_list
 
 

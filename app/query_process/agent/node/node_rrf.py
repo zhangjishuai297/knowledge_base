@@ -22,7 +22,10 @@ def node_rrf(state):
     logger.info("开始进行rrf排序")
     #   1. 提取各路检索结果：从 state 中获取 embedding_chunks 和 hyde_embedding_chunks
     embedding_chunks = state.get("embedding_chunks",[])
+    logger.info("获取的切片数量如下:")
+    logger.info(f"embedding_chunks:{len(embedding_chunks)}")
     hyde_embedding_chunks = state.get("hyde_embedding_chunks",[])
+    logger.info(f"hyde_embedding_chunks:{len(hyde_embedding_chunks)}")
     #   2. 结果标准化：将不同格式的检索结果统一转换为包含 chunk_id 的实体列表。
     """
     {
@@ -42,10 +45,6 @@ def node_rrf(state):
     state["rrf_chunks"] = merge_list
     
 
-        
-
-
-    
     add_done_task(state['session_id'], sys._getframe().f_code.co_name, state.get("is_stream"))
     return state
 
@@ -82,6 +81,7 @@ def _rrf_func(embedding_chunks, hyde_embedding_chunks, ranker_weights=(1.0,1.0),
 
     # 按照得出的分数进行排序
     merge_list.sort(key=lambda x:x["score"],reverse=True)
+    logger.info(f"merge_list数量:{len(merge_list)}")
     # 判断是否超过最大结果数
     if len(merge_list) > max_results:
         merge_list = merge_list[:max_results]
