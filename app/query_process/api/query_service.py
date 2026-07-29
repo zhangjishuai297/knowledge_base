@@ -122,6 +122,7 @@ async def get_history(session_id: str, limit: int = 10):
     2 返回结果
     """
     items = get_recent_messages(session_id)
+    items = sanitize_mongo_data(items)
     return {"session_id": session_id, "items": items}
 
 # 清空历史记录接口
